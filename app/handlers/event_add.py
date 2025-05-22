@@ -54,6 +54,9 @@ async def add_date(message: Message, state: FSMContext):
     """
     Обробляє введену дату події. У разі помилки просить повторити введення.
     """
+    if message.text == "/cancel":
+        return
+
     try:
         parsed_date = validate_date(message.text)
         await state.update_data(date=parsed_date)
@@ -74,6 +77,9 @@ async def add_time(message: Message, state: FSMContext):
     """
     Обробляє введений час події. У разі помилки просить повторити.
     """
+    if message.text == "/cancel":
+        return
+
     try:
         parsed_time = validate_time(message.text)
         await state.update_data(time=parsed_time)
@@ -94,6 +100,9 @@ async def add_category(message: Message, state: FSMContext):
     """
     Отримує значення нагадування (в хвилинах) і переходить до категорії.
     """
+    if message.text == "/cancel":
+        return
+
     try:
         remind = int(message.text.strip())
         await state.update_data(remind_before=remind)
@@ -114,6 +123,9 @@ async def add_tag(message: Message, state: FSMContext):
     """
     Отримує категорію події (або `-` для пропуску) і переходить до тегів.
     """
+    if message.text == "/cancel":
+        return
+
     category = message.text.strip()
     await state.update_data(category=None if category == "-" else category)
     await state.set_state(AddEventState.tag)
@@ -128,6 +140,9 @@ async def ask_repeat(message: Message, state: FSMContext):
     """
     Отримує теги події (або `-` для пропуску) і запитує тип повтору.
     """
+    if message.text == "/cancel":
+        return
+
     tag = message.text.strip()
     await state.update_data(tag=None if tag == "-" else tag)
     await state.set_state(AddEventState.repeat)

@@ -15,7 +15,6 @@ async def cancel_handler(message: Message, state: FSMContext):
     Інакше очищає стан і повертає користувача до головного меню.
     """
     current_state = await state.get_state()
-
     if current_state is None:
         await message.answer(L({
             "uk": "❕ Немає активної операції.",
@@ -23,10 +22,7 @@ async def cancel_handler(message: Message, state: FSMContext):
         }))
     else:
         await state.clear()
-        await message.answer(
-            L({
-                "uk": "❌ Операцію скасовано.",
-                "en": "❌ Operation cancelled."
-            }),
-            reply_markup=build_main_menu()
-        )
+        await message.answer(L({
+            "uk": "❌ Операцію скасовано.",
+            "en": "❌ Operation cancelled."
+        }), reply_markup=build_main_menu())

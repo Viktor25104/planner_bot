@@ -1,10 +1,9 @@
 from googleapiclient.discovery import build
-from datetime import datetime, timezone
+from datetime import datetime
 from app.integrations.google_auth import get_credentials
 from app.models.models import Event
 from app.db import async_session
 from sqlalchemy import select
-from app.utils.i18n import L
 import pytz
 
 async def export_event(user_id: int, title: str, date, time, description=""):

@@ -4,6 +4,7 @@ from app.repositories.event_repo import (
     get_upcoming_events_by_user, get_event_by_id, delete_event
 )
 from app.utils.i18n import L
+from app.db import async_session
 
 
 async def show_events_for_deletion(message: Message):
@@ -12,7 +13,7 @@ async def show_events_for_deletion(message: Message):
 
     Якщо користувач не знайдений або подій немає — надсилає відповідне повідомлення.
     """
-    async with message.bot['db']() as session:
+    async with async_session() as session:
         user = await get_user_by_telegram_id(session, message.from_user.id)
         if not user:
             await message.answer(L({
@@ -44,7 +45,7 @@ async def delete_event_by_callback(callback: CallbackQuery, event_id: int):
 
     Якщо подія вже видалена, надсилає сповіщення.
     """
-    async with callback.bot['db']() as session:
+    async with async_session() as session:
         event = await get_event_by_id(session, event_id)
         if event:
             await delete_event(session, event)

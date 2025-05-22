@@ -3,6 +3,7 @@ from app.repositories.user_repo import get_user_by_telegram_id
 from app.repositories.event_repo import get_event_by_id, get_events_in_range, get_events_by_user
 from app.integrations.google_calendar import export_event, import_events_from_google
 from app.utils.i18n import L
+from app.db import async_session
 
 
 def format_event(event) -> str:
@@ -42,7 +43,7 @@ async def list_events(message: Message, start, end, title: str):
         else:
             category = filter_text
 
-    async with message.bot['db']() as session:
+    async with async_session() as session:
         user = await get_user_by_telegram_id(session, message.from_user.id)
         if not user:
             await message.answer(L({
@@ -68,7 +69,7 @@ async def export_one_to_google(callback: CallbackQuery, event_id: int):
     """
         Експортує одну подію в Google Calendar по callback-запиту.
     """
-    async with callback.bot['db']() as session:
+    async with async_session() as session:
         event = await get_event_by_id(session, event_id)
         if not event:
             await callback.answer(L({
@@ -114,7 +115,7 @@ async def export_all_to_google(message: Message):
     """
         Експортує всі події користувача до Google Calendar.
     """
-    async with message.bot['db']() as session:
+    async with async_session() as session:
         user = await get_user_by_telegram_id(session, message.from_user.id)
         if not user:
             await message.answer(L({
@@ -148,7 +149,7 @@ async def import_from_google_calendar(message: Message):
     """
         Імпортує події з Google Calendar для користувача.
     """
-    async with message.bot['db']() as session:
+    async with async_session() as session:
         user = await get_user_by_telegram_id(session, message.from_user.id)
         if not user:
             await message.answer(L({

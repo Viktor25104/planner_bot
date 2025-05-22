@@ -5,7 +5,7 @@ from app.utils.i18n import L
 
 router = Router()
 
-@router.message()
+@router.message(flags={"block": True})
 async def unknown_input(message: Message, state: FSMContext):
     """
     Обробляє будь-яке нерозпізнане повідомлення.

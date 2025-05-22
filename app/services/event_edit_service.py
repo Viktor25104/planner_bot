@@ -5,6 +5,7 @@ from aiogram.fsm.context import FSMContext
 from app.repositories.user_repo import get_user_by_telegram_id
 from app.repositories.event_repo import get_events_by_user, get_event_by_id, save_event
 from app.utils.i18n import L
+from app.db import async_session
 
 
 edit_prompts = {
@@ -45,7 +46,7 @@ async def list_events_to_edit(message: Message, state: FSMContext):
 
     Якщо користувача або подій немає — показує відповідне повідомлення.
     """
-    async with message.bot['db']() as session:
+    async with async_session() as session:
         user = await get_user_by_telegram_id(session, message.from_user.id)
         if not user:
             await message.answer(L({
@@ -68,7 +69,8 @@ async def list_events_to_edit(message: Message, state: FSMContext):
             text = f"<b>{event.title}</b>\n📅 {date_str} о {time_str}"
 
             buttons = [
-                InlineKeyboardButton(text=L({"uk": "✏️ Редагувати", "en": "✏️ Edit"}), callback_data=f"edit_event:{event.id}")
+                InlineKeyboardButton(text=L({"uk": "✏️ Редагувати", "en": "✏️ Edit"}),
+                                     callback_data=f"edit_event:{event.id}")
             ]
             await message.answer(text, reply_markup=InlineKeyboardMarkup(inline_keyboard=[buttons]))
 
@@ -100,7 +102,7 @@ async def apply_edit(message: Message, state: FSMContext):
     field = data.get("field")
     value = message.text.strip()
 
-    async with message.bot['db']() as session:
+    async with async_session() as session:
         event = await get_event_by_id(session, event_id)
         if not event:
             await message.answer(L({"uk": "⚠️ Подія не знайдена.", "en": "⚠️ Event not found."}))

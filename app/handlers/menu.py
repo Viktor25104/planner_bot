@@ -11,7 +11,9 @@ from app.handlers.event_list import list_today, list_week
 from app.handlers.event_stats import stats_handler
 from app.integrations.google_calendar import import_events_from_google
 from app.models.models import User
+from app.repositories.user_repo import get_user_by_telegram_id
 from app.utils.i18n import get_switch_lang, get_lang_button
+from app.utils.i18n import L
 
 router = Router()
 
@@ -90,7 +92,7 @@ async def switch_language(message: Message):
         )
 
 
-@router.message(F.text.in_(["➕ Додати подію", "➕ Add event"]))
+@router.message(F.text.in_(["➕ Додати", "➕ Add"]))
 async def menu_add_event(message: Message, state: FSMContext):
     """
     Обробляє кнопку "Додати подію".
@@ -120,7 +122,7 @@ async def menu_week(message: Message):
     await list_week(message)
 
 
-@router.message(F.text.in_(["📤 Експорт CSV", "📤 Export CSV"]))
+@router.message(F.text.in_(["📤 CSV", "📤 CSV"]))
 async def menu_export_csv(message: Message):
     """
     Обробляє кнопку "Експорт CSV".
@@ -130,14 +132,31 @@ async def menu_export_csv(message: Message):
     await export_csv(message)
 
 
-@router.message(F.text.in_(["📥 Імпорт Google", "📥 Import Google"]))
+@router.message(F.text.in_(["📥 Google", "📥 Google"]))
 async def menu_import_google(message: Message):
     """
     Обробляє кнопку "Імпорт Google".
 
     Імпортує події з Google Calendar.
     """
-    await import_events_from_google(message)
+    async with async_session() as session:
+        user = await get_user_by_telegram_id(session, message.from_user.id)
+        if not user:
+            await message.answer("⚠️ Спочатку зареєструйтесь через /start.")
+            return
+
+        try:
+            count = await import_events_from_google(user)
+            await message.answer(L({
+                "uk": f"✅ Імпортовано {count} подій з Google Календаря.",
+                "en": f"✅ Imported {count} events from Google Calendar."
+            }, user.language))
+        except Exception as e:
+            print(f"[Import Error] {e}")
+            await message.answer(L({
+                "uk": "❌ Помилка при імпорті з Google.",
+                "en": "❌ Failed to import from Google."
+            }, user.language))
 
 
 @router.message(F.text.in_(["📈 Статистика", "📈 Stats"]))
