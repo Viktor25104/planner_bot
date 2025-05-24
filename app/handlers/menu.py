@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
@@ -7,11 +9,11 @@ from app.handlers.event_add import cmd_add
 
 from app.handlers.event_chart import chart_handler
 from app.handlers.event_export import export_csv
-from app.handlers.event_list import list_today, list_week
 from app.handlers.event_stats import stats_handler
 from app.integrations.google_calendar import import_events_from_google
 from app.models.models import User
 from app.repositories.user_repo import get_user_by_telegram_id
+from app.services.event_list_service import list_events
 from app.utils.i18n import get_switch_lang, get_lang_button
 from app.utils.i18n import L
 
@@ -104,12 +106,11 @@ async def menu_add_event(message: Message, state: FSMContext):
 
 @router.message(F.text.in_(["📅 Сьогодні", "📅 Today"]))
 async def menu_today(message: Message):
-    """
-    Обробляє кнопку "Сьогодні".
-
-    Виводить список подій на поточний день.
-    """
-    await list_today(message)
+    today = datetime.now().date()
+    await list_events(message, today, today, L({
+        "uk": "📅 <b>Події на сьогодні:</b>",
+        "en": "📅 <b>Today's events:</b>"
+    }), parse_args=False)
 
 
 @router.message(F.text.in_(["🗓 Тиждень", "🗓 Week"]))
@@ -119,8 +120,12 @@ async def menu_week(message: Message):
 
     Виводить список подій на поточний тиждень.
     """
-    await list_week(message)
-
+    start = datetime.now().date()
+    end = start + timedelta(days=6)
+    await list_events(message, start, end, L({
+        "uk": "🗓 <b>Події на тиждень:</b>",
+        "en": "🗓 <b>Events for the week:</b>"
+    }), parse_args=False)
 
 @router.message(F.text.in_(["📤 CSV", "📤 CSV"]))
 async def menu_export_csv(message: Message):

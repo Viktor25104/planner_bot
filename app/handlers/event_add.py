@@ -54,7 +54,8 @@ async def add_date(message: Message, state: FSMContext):
     """
     Обробляє введену дату події. У разі помилки просить повторити введення.
     """
-    if message.text == "/cancel":
+    if message.text in ["/cancel", "/today", "/start", "/help"]:
+        await state.clear()
         return
 
     try:

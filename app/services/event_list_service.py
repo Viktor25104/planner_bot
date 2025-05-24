@@ -29,19 +29,21 @@ def build_google_button(event_id: int):
     ]])
 
 
-async def list_events(message: Message, start, end, title: str):
+async def list_events(message: Message, start, end, title: str, parse_args: bool = True):
     """
-        Виводить список подій за вказаний період (і фільтром за категорією або тегом).
+    Виводить список подій за вказаний період (і фільтром за категорією або тегом).
     """
-    args = message.text.strip().split(maxsplit=1)
-    filter_text = args[1].strip() if len(args) > 1 else None
     category = tag = None
 
-    if filter_text:
-        if filter_text.startswith("#"):
-            tag = filter_text[1:]
-        else:
-            category = filter_text
+    if parse_args:
+        args = message.text.strip().split(maxsplit=1)
+        filter_text = args[1].strip() if len(args) > 1 else None
+
+        if filter_text:
+            if filter_text.startswith("#"):
+                tag = filter_text[1:]
+            else:
+                category = filter_text
 
     async with async_session() as session:
         user = await get_user_by_telegram_id(session, message.from_user.id)
