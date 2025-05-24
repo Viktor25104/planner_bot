@@ -58,7 +58,7 @@ class Config:
 # Поточна активна конфігурація
 config = Config(
     bot=BotConfig(
-        token="7606945895:AAFXrH8qOI1mdYMGgERn8yLqL-zOYDdL22Q",
+        token="7499171950:AAHXbb9Vup_yEOwrOXd1PWeDT6NSt7tisAs",
         admin_ids=[],
     ),
     db=DBConfig(

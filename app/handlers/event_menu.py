@@ -8,7 +8,6 @@ from app.db import async_session
 from app.handlers.event_add import cmd_add
 
 from app.handlers.event_chart import chart_handler
-from app.handlers.event_export import export_csv
 from app.handlers.event_stats import stats_handler
 from app.integrations.google_calendar import import_events_from_google
 from app.models.models import User
