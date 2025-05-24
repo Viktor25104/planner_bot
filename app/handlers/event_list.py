@@ -3,7 +3,7 @@ from aiogram.types import Message, CallbackQuery
 from datetime import datetime, timedelta
 from app.services.event_list_service import (
     list_events, export_one_to_google,
-    export_all_to_google, import_from_google_calendar
+    import_from_google_calendar
 )
 from app.utils.i18n import L
 
@@ -18,7 +18,7 @@ async def list_nearest(message: Message):
     Виводить події на сьогодні та завтра.
     """
     today = datetime.now().date()
-    tomorrow = today + timedelta(days=1)
+    tomorrow = today + timedelta(days=90)
     await list_events(message, today, tomorrow, L({
         "uk": "📅 <b>Найближчі події:</b>",
         "en": "📅 <b>Upcoming events:</b>"
@@ -80,16 +80,6 @@ async def export_google(callback: CallbackQuery):
     """
     event_id = int(callback.data.split(":")[1])
     await export_one_to_google(callback, event_id)
-
-
-@router.message(F.text == "/export_all")
-async def export_all(message: Message):
-    """
-    Обробляє команду /export_all.
-
-    Експортує всі події користувача в Google Calendar.
-    """
-    await export_all_to_google(message)
 
 
 @router.message(F.text == "/import_google")

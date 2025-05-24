@@ -3,8 +3,10 @@ from datetime import datetime
 from app.integrations.google_auth import get_credentials
 from app.models.models import Event
 from app.db import async_session
-from sqlalchemy import select
 import pytz
+
+from app.repositories.event_repo import exists_event
+
 
 async def export_event(user_id: int, title: str, date, time, description=""):
     """
@@ -67,20 +69,16 @@ async def import_events_from_google(user):
 
     async with async_session() as session:
         for item in items:
+            if item.get("status") == "cancelled" or "birthday" in item.get("summary", "").lower():
+                continue
+
             title = item.get("summary", item.get("title", ""))
             description = item.get("description", "")
             start = item["start"].get("dateTime") or item["start"].get("date")
             date_obj = datetime.fromisoformat(start).astimezone(pytz.timezone("Europe/Kyiv"))
 
-            # Перевірка на наявність події в базі
-            stmt = select(Event).where(
-                Event.user_id == user.id,
-                Event.title == title,
-                Event.date == date_obj.date()
-            )
-            result = await session.execute(stmt)
-            if result.scalar_one_or_none():
-                continue  # Подія вже існує
+            if await exists_event(session, user.id, title, date_obj.date(), date_obj.time()):
+                continue
 
             new_event = Event(
                 user_id=user.id,

@@ -11,31 +11,33 @@ from app.scheduler.scheduler import start_scheduler
 from app.utils.i18n import L
 
 from app.handlers import (
-    start,
-    menu,
+    event_start,
+    event_menu,
     event_add,
     event_list,
     event_delete,
     event_edit,
-    cancel,
+    event_cancel,
     event_stats,
     event_chart,
     event_export,
-    fallback,
+    event_done,
+    event_fallback,
 )
 
 routers = [
-    start.router,
-    menu.router,
+    event_start.router,
+    event_menu.router,
     event_add.router,
     event_list.router,
     event_delete.router,
     event_edit.router,
-    cancel.router,
+    event_cancel.router,
     event_stats.router,
     event_chart.router,
     event_export.router,
-    fallback.router,
+    event_done.router,
+    event_fallback.router,
 ]
 
 

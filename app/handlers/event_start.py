@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.types import Message
 from app.db import async_session
 from app.services.user_service import handle_user_start
-from app.handlers.menu import build_main_menu
+from app.handlers.event_menu import build_main_menu
 from app.utils.i18n import L
 
 router = Router()

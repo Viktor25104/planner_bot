@@ -45,19 +45,11 @@ async def finish_event_logic(message: Message, state: FSMContext):
         message (Message): Повідомлення користувача.
         state (FSMContext): Контекст FSM.
 
-    Відповідь:
+    Returns:
         Підтвердження збереження та рекомендації (якщо є).
     """
-    repeat = message.text.strip().lower()
-    if repeat not in ("none", "daily", "weekly", "monthly", "yearly"):
-        await message.answer(L({
-            "uk": "❌ Невірний формат повтору.",
-            "en": "❌ Invalid repeat format."
-        }))
-        return
-
-    await state.update_data(repeat=repeat)
     data = await state.get_data()
+    lang = message.from_user.language_code if message.from_user.language_code in ("uk", "en") else "uk"
 
     async with async_session() as session:
         stmt = select(User).where(User.telegram_id == message.from_user.id)
@@ -98,7 +90,8 @@ async def finish_event_logic(message: Message, state: FSMContext):
         for other in same_day_events:
             if other.id == event.id or not other.time or not event.time:
                 continue
-            delta = abs((datetime.combine(event.date, event.time) - datetime.combine(other.date, other.time)).total_seconds()) / 60
+            delta = abs((datetime.combine(event.date, event.time) - datetime.combine(other.date,
+                                                                                     other.time)).total_seconds()) / 60
             if 0 < delta < 30:
                 recommendations.append(L({
                     "uk": "⏱ Події йдуть майже без перерв.",
@@ -115,13 +108,18 @@ async def finish_event_logic(message: Message, state: FSMContext):
                 }))
 
     await state.clear()
+    from app.handlers.event_menu import build_main_menu
     await message.answer(L({
         "uk": "✅ Подію збережено з усіма параметрами!",
         "en": "✅ Event saved with all parameters!"
-    }))
+    }), reply_markup=build_main_menu(lang))
 
     if recommendations:
         await message.answer(L({
             "uk": "📌 <b>Поради:</b>\n" + "\n".join(recommendations),
             "en": "📌 <b>Recommendations:</b>\n" + "\n".join(recommendations)
         }))
+
+    # Експорт в Google Calendar
+    from app.services.event_list_service import export_one_to_google
+    await export_one_to_google(message, event.id)
