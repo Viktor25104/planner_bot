@@ -37,8 +37,7 @@ async def get_events_by_user(session, user_id: int, ordered: bool = False):
     result = await session.execute(stmt)
     return result.scalars().all()
 
-
-async def get_upcoming_events_by_user(session, user_id: int, days_ahead: int = 7):
+async def get_upcoming_events_by_user(session, user_id: int, days_ahead: int = 90):
     """
     Отримує майбутні події користувача на вказану кількість днів наперед.
 
