@@ -69,7 +69,10 @@ async def import_events_from_google(user):
 
     async with async_session() as session:
         for item in items:
-            if item.get("status") == "cancelled" or "birthday" in item.get("summary", "").lower():
+            summary = item.get("summary", "").lower()
+            event_type = item.get("eventType", "")
+
+            if item.get("status") == "cancelled" or "birthday" in summary or event_type == "birthday":
                 continue
 
             title = item.get("summary", item.get("title", ""))
