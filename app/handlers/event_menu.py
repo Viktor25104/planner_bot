@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from sqlalchemy import select
 from app.db import async_session
 from app.handlers.event_add import cmd_add
@@ -38,7 +38,7 @@ def build_main_menu(lang: str = "uk") -> ReplyKeyboardMarkup:
                 KeyboardButton(text="🗓 Тиждень" if lang == "uk" else "🗓 Week")
             ],
             [
-                KeyboardButton(text="📤 CSV" if lang == "uk" else "📤 CSV"),
+                KeyboardButton(text="📤 Експорт" if lang == "uk" else "📤 Export"),
                 KeyboardButton(text="📥 Google" if lang == "uk" else "📥 Google")
             ],
             [
@@ -127,14 +127,29 @@ async def menu_week(message: Message):
         "en": "🗓 <b>Events for the week:</b>"
     }), parse_args=False)
 
-@router.message(F.text.in_(["📤 CSV", "📤 CSV"]))
-async def menu_export_csv(message: Message):
-    """
-    Обробляє кнопку "Експорт CSV".
 
-    Надсилає файл з подіями у форматі CSV.
+@router.message(F.text.in_(["📤 Експорт", "📤 Export"]))
+async def choose_export_format(message: Message):
     """
-    await export_csv(message)
+    Обробляє кнопку Експорт і показує вибір формату.
+    """
+    lang = message.from_user.language_code if message.from_user.language_code in ("uk", "en") else "uk"
+
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📄 CSV", callback_data="export:csv")],
+        [InlineKeyboardButton(text="📄 TXT", callback_data="export:txt")],
+        [InlineKeyboardButton(text="📊 Excel", callback_data="export:excel")],
+        [InlineKeyboardButton(text="📦 JSON", callback_data="export:json")],
+        [InlineKeyboardButton(text="🖨 PDF", callback_data="export:pdf")]
+    ])
+
+    await message.answer(
+        L({
+            "uk": "📤 Оберіть формат експорту:",
+            "en": "📤 Choose export format:"
+        }, lang),
+        reply_markup=kb
+    )
 
 
 @router.message(F.text.in_(["📥 Google", "📥 Google"]))
